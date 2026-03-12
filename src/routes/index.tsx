@@ -15,9 +15,9 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 export default function AppNavigator() {
     return (
         <Stack.Navigator initialRouteName="Login">
-            <Stack.Screen name="Login" component={LoginScreen}/>
-            <Stack.Screen name="PokemonList" component={PokemonListScreen}/>
-            <Stack.Screen name="PokemonDetail" component={PokemonDetailScreen}/>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="PokemonList" component={PokemonListScreen} />
+            <Stack.Screen name="PokemonDetail" component={PokemonDetailScreen} />
         </Stack.Navigator>
-    )
+    );
 }

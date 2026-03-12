@@ -40,14 +40,14 @@ const MOCK_POKEMON_LIST: PokemonListItem[] = [
     name: 'squirtle',
     imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
     types: ['water'],
-  }, 
+  },
   {
     id: 8,
     name: 'Wartortle',
     imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png',
     types: ['water'],
   },
-    {
+  {
     id: 25,
     name: 'pikachu',
     imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
@@ -70,8 +70,15 @@ const MOCK_POKEMON_LIST: PokemonListItem[] = [
 export default function PokemonListScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList' >> ();
-  
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList'>>();
+
+  const handleLogout = () => {
+    // Navegar de volta para a tela de login
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
 
   const renderItem = ({ item }: { item: PokemonListItem }) => (
     <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}>
@@ -88,17 +95,20 @@ export default function PokemonListScreen() {
       <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
     </TouchableOpacity>
   );
-  
 
   return (
     <View style={styles.container}>
+      <View style={styles.logoutButtonContainer}>
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
       <Text style={styles.headerTitle}>Pokédex</Text>
       <FlatList
         data={MOCK_POKEMON_LIST}
         keyExtractor={(item) => String(item.id)}
         renderItem={renderItem}
         contentContainerStyle={styles.listContent}
-        
       />
     </View>
   );
