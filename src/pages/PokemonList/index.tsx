@@ -1,76 +1,77 @@
-import React from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
+import React, { use, useEffect, useState } from 'react';
+import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../../routes';
 import PokemonDetailScreen from '../PokemonDetail';
+import { fetchPokemonListPage, type PokemonListItemUI } from '../../services/pokeapi';
+import { fetchPokemonList, type PokemonListResponse } from '../../services/pokeapi';
 
-
-
-type PokemonListItem = {
-  id: number;
-  name: string;
-  imageUrl: string;
-  types: string[];
-};
-
-const MOCK_POKEMON_LIST: PokemonListItem[] = [
-  {
-    id: 1,
-    name: 'bulbasaur',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png',
-    types: ['grass', 'poison'],
-  },
-  {
-    id: 2,
-    name: 'ivysaur',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/2.png',
-    types: ['grass', 'poison'],
-  },
-  {
-    id: 4,
-    name: 'charmander',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png',
-    types: ['fire'],
-  },
-  {
-    id: 7,
-    name: 'squirtle',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/7.png',
-    types: ['water'],
-  },
-  {
-    id: 8,
-    name: 'Wartortle',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/8.png',
-    types: ['water'],
-  },
-  {
-    id: 25,
-    name: 'pikachu',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
-    types: ['electric'],
-  },
-  {
-    id: 104,
-    name: 'Cubone',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/104.png',
-    types: ['Ground'],
-  },
-  {
-    id: 105,
-    name: 'Marowak',
-    imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/105.png',
-    types: ['Ground'],
-  },
-];
+const PAGE_SIZE = 10;
 
 export default function PokemonListScreen() {
   const theme = useTheme();
   const styles = createStyles(theme);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonList'>>();
+
+  const [items, setItems] = useState<PokemonListItemUI[]>([]);
+  const [offset, setOffset] = useState(0);
+  const [hasNextPage, setHasNextPage] = useState(false);
+
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const [error, setError] = useState<string | null>(null);
+
+ async function loadInitial() {
+    try {
+      setError(null);
+      setIsInitialLoading(true);
+      const page = await fetchPokemonListPage(PAGE_SIZE, 0);
+      setItems(page.items);
+      setOffset(PAGE_SIZE);
+      setHasNextPage(Boolean(page.next));
+    } catch {
+      setError('Falha ao carregar a lista de Pokémon.');
+    } finally {
+      setIsInitialLoading(false);
+    }
+  }
+
+async function loadMore() {
+    if (isLoadingMore || isInitialLoading || isRefreshing || !hasNextPage) return;
+    try {
+      setIsLoadingMore(true);
+      const page = await fetchPokemonListPage(PAGE_SIZE, offset);
+      setItems((prev) => [...prev, ...page.items]);
+      setOffset((prev) => prev + PAGE_SIZE);
+      setHasNextPage(Boolean(page.next));
+    } catch {
+      setError('Falha ao carregar mais Pokémon.');
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }
+
+
+  async function refreshList() {
+    try {
+      setError(null);
+      setIsRefreshing(true);
+      const page = await fetchPokemonListPage(PAGE_SIZE, 0);
+      setItems(page.items);
+      setOffset(PAGE_SIZE);
+      setHasNextPage(Boolean(page.next));
+    } catch {
+      setError('Falha ao atualizar a lista.');
+    } finally {
+      setIsRefreshing(false);
+    }
+  }
+
 
   const handleLogout = () => {
     // Navegar de volta para a tela de login
@@ -80,22 +81,10 @@ export default function PokemonListScreen() {
     });
   };
 
-  const renderItem = ({ item }: { item: PokemonListItem }) => (
-    <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}>
-      <View style={styles.cardLeft}>
-        <Text style={styles.cardName}>{item.name}</Text>
-        <View style={styles.typeContainer}>
-          {item.types.map((type) => (
-            <View key={type} style={styles.typeBadge}>
-              <Text style={styles.typeText}>{type}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
-    </TouchableOpacity>
-  );
-
+  useEffect(() => {
+    loadInitial();
+  }, []);
+  
   return (
     <View style={styles.container}>
       <View style={styles.logoutButtonContainer}>
@@ -105,10 +94,35 @@ export default function PokemonListScreen() {
       </View>
       <Text style={styles.headerTitle}>Pokédex</Text>
       <FlatList
-        data={MOCK_POKEMON_LIST}
+        data={items}
         keyExtractor={(item) => String(item.id)}
-        renderItem={renderItem}
+        renderItem={({ item }: { item: PokemonListItemUI; }) => (
+          <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}>
+            {/* <View style={styles.cardLeft}>
+          <Text style={styles.cardName}>{item.name}</Text>
+          <View style={styles.typeContainer}>
+            {item.types.map((type) => (
+              <View key={type} style={styles.typeBadge}>
+                <Text style={styles.typeText}>{type}</Text>
+              </View>
+            ))}
+          </View>
+        </View> */}
+            <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
+          </TouchableOpacity>
+        )}
         contentContainerStyle={styles.listContent}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        onRefresh={refreshList}
+        refreshing={isRefreshing}
+        ListFooterComponent={
+          isLoadingMore ? (
+            <View style={{paddingVertical: 16}}>
+              <ActivityIndicator color={theme.colors.primary} />
+            </View>
+          ) : null
+        }
       />
     </View>
   );

@@ -29,6 +29,49 @@ export async function fetchPokemonList(
   return response.json();
 }
 
+export type PokemonListItemUI = {
+  id : number;
+  name: string;
+  imageUrl: string;
+  //types: string[];
+
+};
+
+function extractIdPokemon(url: string): number {
+  const parts = url.split('/').filter(Boolean);
+  return Number(parts[parts.length - 1]);
+}
+
+export async function fetchPokemonListPage(
+  limit = 10,
+  offset = 0,
+  options?: FetchOptions
+): Promise<{
+  items: PokemonListItemUI[];
+  count: number;
+  next: string | null;
+  //previous: string | null;
+}> {
+  const data = await fetchPokemonList(limit, offset, options);
+
+  const items = data.results.map((pokemon) => {
+    const id = extractIdPokemon(pokemon.url);
+
+    return {
+      id,
+      name: pokemon.name,
+      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
+    }
+  });
+
+  return {
+    items,
+    count: data.count,
+    next: data.next,
+    //previous: data.previous,
+  };
+}
+
 export type PokemonDetailResponse = {
   id: number;
   name: string;
