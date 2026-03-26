@@ -30,11 +30,10 @@ export async function fetchPokemonList(
 }
 
 export type PokemonListItemUI = {
-  id : number;
+  id: number;
   name: string;
   imageUrl: string;
-  //types: string[];
-
+  types: string[];
 };
 
 function extractIdPokemon(url: string): number {
@@ -53,16 +52,21 @@ export async function fetchPokemonListPage(
   //previous: string | null;
 }> {
   const data = await fetchPokemonList(limit, offset, options);
-
-  const items = data.results.map((pokemon) => {
+  const items = await Promise.all(
+  data.results.map(async (pokemon) => {
     const id = extractIdPokemon(pokemon.url);
+
+    const res = await fetch(`${BASE_URL}/pokemon/${id}`);
+    const details = await res.json();
 
     return {
       id,
       name: pokemon.name,
-      imageUrl: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${id}.png`,
-    }
-  });
+      imageUrl: details.sprites.front_default,
+      types: details.types.map((t: any) => t.type.name),
+    };
+  })
+);
 
   return {
     items,

@@ -1,4 +1,4 @@
-import React, { use, useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import { View, Text, FlatList, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
@@ -8,6 +8,7 @@ import { RootStackParamList } from '../../routes';
 import PokemonDetailScreen from '../PokemonDetail';
 import { fetchPokemonListPage, type PokemonListItemUI } from '../../services/pokeapi';
 import { fetchPokemonList, type PokemonListResponse } from '../../services/pokeapi';
+import { colorTags, typeIcons } from '../../global/themes';
 
 const PAGE_SIZE = 10;
 
@@ -73,7 +74,7 @@ async function loadMore() {
   }
 
 
-  const handleLogout = () => {
+const handleLogout = () => {
     // Navegar de volta para a tela de login
     navigation.reset({
       index: 0,
@@ -81,33 +82,57 @@ async function loadMore() {
     });
   };
 
+  useLayoutEffect(() => {
+  navigation.setOptions({
+    headerRight: () => (
+      <TouchableOpacity style={ styles.logoutButton } onPress={handleLogout}>
+        <Text>Logout</Text>
+      </TouchableOpacity>
+    ),
+  });
+}, [navigation]);
+
   useEffect(() => {
     loadInitial();
   }, []);
+
+
   
   return (
     <View style={styles.container}>
-      <View style={styles.logoutButtonContainer}>
+      {/* <View style={styles.logoutButtonContainer}>
         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       <Text style={styles.headerTitle}>Pokédex</Text>
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }: { item: PokemonListItemUI; }) => (
           <TouchableOpacity style={styles.card} activeOpacity={0.8} onPress={() => navigation.navigate('PokemonDetail', { id: item.id })}>
-            {/* <View style={styles.cardLeft}>
-          <Text style={styles.cardName}>{item.name}</Text>
-          <View style={styles.typeContainer}>
-            {item.types.map((type) => (
-              <View key={type} style={styles.typeBadge}>
-                <Text style={styles.typeText}>{type}</Text>
-              </View>
-            ))}
-          </View>
-        </View> */}
+            <View style={styles.cardLeft}>
+              <Text style={styles.cardName}>{item.name}</Text>
+<View style={styles.typeContainer}>
+  {item.types?.map((type) => {
+    const color = colorTags[type as keyof typeof colorTags] || '#777';
+    return (
+      <View
+        key={type}
+        style={[
+          styles.typeBadge,
+          { backgroundColor: color }
+        ]}
+      >
+        <Text style={styles.typeText}>
+                {typeIcons[type] ? typeIcons[type] + ' ' : ''}{type.toUpperCase()}
+              </Text>
+            </View>
+    );
+  })}
+</View>
+            </View>
+
             <Image source={{ uri: item.imageUrl }} style={styles.cardImage} />
           </TouchableOpacity>
         )}

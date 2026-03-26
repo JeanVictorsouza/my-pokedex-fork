@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { createStyles } from './styles';
-import { useTheme } from '../../global/themes';
+import { useTheme, colorTags, typeIcons } from '../../global/themes';
 import { useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes';
@@ -10,7 +10,7 @@ import { fetchPokemonDetail,
             type PokemonDetailResponse,  
             type PokemonSpeciesResponse } from '../../services/pokeapi';
 
-// const MOCK_POKEMON_DETAIL = {
+  // const MOCK_POKEMON_DETAIL = {
 //   id: 25,
 //   name: 'pikachu',
 //   imageUrl: 'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/25.png',
@@ -104,9 +104,6 @@ function getPokemonDescriptionFromSpecies(
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.sectionText}>
-        ID INFORMADO: {id}
-      </Text>
       <View style={styles.header}>
         <View style={styles.nameRow}>
           <Text style={styles.name}>{pokemon.name}</Text>
@@ -114,12 +111,20 @@ function getPokemonDescriptionFromSpecies(
         </View>
 
         <View style={styles.typeContainer}>
-          {pokemon.types.map(({type}) => (
-            <View key={type.name} style={styles.typeBadge}>
-              <Text style={styles.typeText}>{type.name}</Text>
-            </View>
-          ))}
-        </View>
+  {pokemon.types.map(({ type }) => (
+    <View
+      key={type.name}
+      style={[
+        styles.typeBadge,
+        { backgroundColor: colorTags[type.name as keyof typeof colorTags] || '#777' },
+      ]}
+    >
+      <Text style={styles.typeText}>
+        {typeIcons[type.name] ? typeIcons[type.name] + ' ' : ''}{type.name.toUpperCase()}
+      </Text>
+    </View>
+  ))}
+</View>
         {pokemon.sprites.front_default ? (
           <Image source={{ uri: pokemon.sprites.front_default }} style={styles.image} />
         ) : null}

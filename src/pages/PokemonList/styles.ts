@@ -51,15 +51,25 @@ export const createStyles = (theme: Theme) =>
       gap: 6,
     },
     typeBadge: {
-      backgroundColor: theme.colors.accent,
-      borderRadius: 999,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    marginRight: 6,
     },
+//   typeBadge: {
+//   paddingHorizontal: 10,
+//   paddingVertical: 4,
+//   borderRadius: 12,
+//   marginRight: 6,
+//   elevation: 2, // Android
+//   shadowColor: '#000', // iOS
+//   shadowOpacity: 0.2,
+//   shadowRadius: 2,
+//   },
     typeText: {
-      fontSize: 12,
-      textTransform: 'capitalize',
-      color: theme.colors.text,
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
     },
     cardImage: {
       width: 72,
