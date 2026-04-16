@@ -48,7 +48,7 @@ export default function PokemonDetailScreen() {
  const theme = useTheme();
  const styles = createStyles(theme);
  const route = useRoute<RouteProp<RootStackParamList, 'PokemonDetail'>>();
- const { id } = route.params;
+ const { id, capturedPhoto } = route.params;
 
 
  const [pokemon, setPokemon] = useState<PokemonDetailResponse | null>(null);
@@ -211,7 +211,6 @@ try {
          <Text style={styles.id}>#{String(pokemon.id).padStart(3, '0')}</Text>
        </View>
 
-
        <View style={styles.typeContainer}>
          {pokemon.types.map(({ type }) => (
            <View
@@ -223,6 +222,23 @@ try {
          ))}
        </View>
 
+         {capturedPhoto ? (
+          <View style={{ alignItems: 'center', marginTop: 10 }}>
+            <Text style={{ color: theme.colors.text, fontWeight: 'bold', marginBottom: 5 }}>
+              Sua Captura:
+            </Text>
+            <Image 
+              source={{ uri: capturedPhoto }} 
+              style={{ 
+                width: 200, 
+                height: 200, 
+                borderRadius: 20, 
+                borderWidth: 3, 
+                borderColor: '#10b981' 
+              }} 
+            />
+          </View>
+        ) : null}
 
        {pokemon.sprites.front_default ?
          (<Image source={{ uri: pokemon.sprites.front_default }} style={styles.image} />) :

@@ -1,14 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 
 export default function PokemonCameraScreen() {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const theme = useTheme();
   const styles = createStyles(theme);
 
@@ -48,15 +50,17 @@ export default function PokemonCameraScreen() {
   async function handleTakePhoto() {
     const photo = await cameraRef.current?.takePictureAsync({
       quality: 0.7,
-      skipProcessing: true,
+      // skipProcessing: true,
       // exif: true,   // descomente se quiser ver metadata
       // base64: true, // evite no começo (objeto fica enorme)
     });
 
 
     if (photo) {
-      setPhotoResult(photo);
-      console.log('PHOTO_RESULT (pokemon id = ' + id + '):', photo);
+      navigation.navigate('PokemonDetail', {
+        id: id,
+        capturedPhoto: photo.uri
+      });
     }
   }
 

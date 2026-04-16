@@ -8,7 +8,7 @@ import PokemonCameraScreen from '../pages/PokemonCamera';
 export type RootStackParamList = {
     Login: undefined;
     PokemonList: undefined;
-    PokemonDetail: /*undefined;*/{ id: number; photoUri?: string };
+    PokemonDetail: /*undefined;*/{ id: number; capturedPhoto?: string };
     PokemonCamera: { id: number };
 }
 
