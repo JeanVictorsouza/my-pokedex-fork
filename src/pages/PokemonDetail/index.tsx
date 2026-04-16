@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, ScrollView, ActivityIndicator, TouchableOpacity, Share } from 'react-native';
 import { createStyles } from './styles';
 import { useTheme } from '../../global/themes';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useNavigation } from '@react-navigation/native';
 import { RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../routes';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import {
  fetchPokemonDetail,
  fetchPokemonSpecies,
@@ -12,8 +13,8 @@ import {
  type PokemonSpeciesResponse
 } from '../../services/pokeapi';
 import { isFavorite, toggleFavorite } from '../../services/favoritesStorage';
-
 import { setLastViewedId } from '../../services/lastViewedStorage';
+import PokemonCameraScreen from '../PokemonCamera';
 
 
 const TYPE_COLORS: Record<string, string> = {
@@ -59,7 +60,11 @@ export default function PokemonDetailScreen() {
  const [favorite, setFavorite] = useState(false);
  const [favoriteLoading, setFavoriteLoading] = useState(true);
 
+ const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList, 'PokemonDetail'>>();
 
+ function handleOpenCamera(): void {
+  navigation.navigate('PokemonCamera', { id });
+}
  
  function getPokemonDescriptionFromSpecies(
    species: PokemonSpeciesResponse,
@@ -240,8 +245,32 @@ try {
          {favorite ? '★ Favorito' : '☆ Favoritar'}
        </Text>
      </TouchableOpacity>
+      
+      <TouchableOpacity
+          onPress={handleSharePokemon}
+          style={{
+            backgroundColor: '#2563eb',
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999,
+          }}
+        >
+          <Text style={{ fontWeight: '700', color: '#fff' }}>Compartilhar</Text>
+        </TouchableOpacity>
+      
+      <TouchableOpacity
+          onPress={handleOpenCamera}
+          style={{
+            backgroundColor: '#10b981', // Verde esmeralda
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+            borderRadius: 999,
+          }}
+        >
+          <Text style={{ fontWeight: '700', color: '#fff' }}>📸 Capturar Foto</Text>
+        </TouchableOpacity>
 
-       <TouchableOpacity
+       {/* <TouchableOpacity
         onPress={handleSharePokemon}
         style={{
           backgroundColor: '#2563eb',
@@ -253,7 +282,9 @@ try {
         }}
       >
         <Text style={{ fontWeight: '700', color: '#fff' }}>Compartilhar</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+      
 
      <View style={styles.section}>
        <Text style={styles.sectionTitle}>Sobre</Text>
