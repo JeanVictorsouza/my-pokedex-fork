@@ -57,7 +57,7 @@ export default function PokemonCameraScreen() {
 
 
     if (photo) {
-      navigation.navigate('PokemonDetail', {
+      navigation.replace('PokemonDetail', {
         id: id,
         capturedPhoto: photo.uri
       });

@@ -15,6 +15,7 @@ import {
 import { isFavorite, toggleFavorite } from '../../services/favoritesStorage';
 import { setLastViewedId } from '../../services/lastViewedStorage';
 import PokemonCameraScreen from '../PokemonCamera';
+import { notifyPokemonFavorited } from '../../services/localNotifications';
 
 
 const TYPE_COLORS: Record<string, string> = {
@@ -97,6 +98,10 @@ export default function PokemonDetailScreen() {
      types: pokemon.types.map((t) => t.type.name),
    };
    const updated = await toggleFavorite(summary);
+   const isNowFavorite = updated.some((item) => item.id === pokemon.id);
+   if (isNowFavorite) {
+     await notifyPokemonFavorited(pokemon.name);
+   }
    setFavorite(updated.some((item) => item.id === pokemon.id));
  }
 
